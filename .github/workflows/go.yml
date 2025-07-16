@@ -24,5 +24,20 @@ jobs:
     - name: Build
       run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+    - name: Run tests with coverage
+      run: go test -v ./... -coverprofile=coverage.out
+
+    - name: Show coverage report
+      run: go tool cover -func=coverage.out
+
+    - name: Enforce minimum 80% test coverage
+      run: |
+        threshold=80
+        total=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
+        echo "Current test coverage: $total%"
+        if (( $(echo "$total < $threshold" | bc -l) )); then
+          echo "❌ Coverage $total% is below threshold ($threshold%)"
+          exit 1
+        else
+          echo "✅ Coverage is sufficient"
+        fi
