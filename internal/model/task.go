@@ -63,7 +63,7 @@ func (t *Task) String() string {
 		status = "[✓]"
 	}
 
-	result := fmt.Sprintf("%s %s %s", status, t.ID, t.Title)
+	result := fmt.Sprintf("%s %d %s", status, t.ID, t.Title)
 
 	if !t.DueDate.IsZero() {
 		dueStr := "Due: " + t.DueDate.Format("2006-01-02")
