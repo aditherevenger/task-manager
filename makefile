@@ -36,8 +36,9 @@ run:
 	$(GORUN) $(MAIN_PACKAGE)
 
 test:
-	@echo "Running tests..."
-	set CGO_ENABLED=1 && $(GOTEST) $(TEST_FLAGS) ./...
+	@echo "Running tests with coverage..."
+	set CGO_ENABLED=1 && $(GOTEST) $(TEST_FLAGS) -coverprofile=coverage.out ./...
+	@$(GOCMD) tool cover -func=coverage.out
 
 clean:
 	@echo "Cleaning..."
