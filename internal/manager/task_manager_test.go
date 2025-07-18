@@ -1014,13 +1014,13 @@ func TestTaskManager_GetOverdueTasks(t *testing.T) {
 	}
 
 	// Set up tasks with various conditions
-	// Task 1: No due date - would be considered overdue when DueDate is zero
+	// Task 1: No due date - not overdue
 	// Task 2: Due date in the future - not overdue
 	tasks[1].SetDueDate(time.Now().Add(24 * time.Hour))
-	// Task 3: Due date in the past - not overdue because non-zero date
+	// Task 3: Due date in the past - overdue
 	tasks[2].SetDueDate(time.Now().Add(-24 * time.Hour))
-	// Task 4: Due date is zero but completed - not overdue because completed
-	tasks[3].SetDueDate(time.Time{})
+	// Task 4: Due date in the past but completed - not overdue
+	tasks[3].SetDueDate(time.Now().Add(-24 * time.Hour))
 	tasks[3].MarkComplete()
 
 	manager := &TaskManager{
@@ -1031,16 +1031,15 @@ func TestTaskManager_GetOverdueTasks(t *testing.T) {
 	overdueTasks := manager.GetOverdueTasks()
 
 	// According to the IsOverdue() implementation, a task is overdue if:
-	// t.DueDate.IsZero() && time.Now().After(t.DueDate) && !t.Completed
-	// This means that tasks with zero due dates and not completed are considered overdue
-	expectedCount := 1 // Only task 1 with zero due date and not completed would be considered overdue
+	// it has a non-zero due date in the past and is not completed
+	expectedCount := 1 // Only task 3 should be overdue
 	if len(overdueTasks) != expectedCount {
 		t.Errorf("Expected %d overdue tasks, got %d", expectedCount, len(overdueTasks))
 	}
 
 	// Check that the specific overdue task was returned
-	if len(overdueTasks) > 0 && overdueTasks[0].ID != 1 {
-		t.Errorf("Expected overdue task ID 1, got %d", overdueTasks[0].ID)
+	if len(overdueTasks) > 0 && overdueTasks[0].ID != 3 {
+		t.Errorf("Expected overdue task ID 3, got %d", overdueTasks[0].ID)
 	}
 }
 
@@ -1122,9 +1121,15 @@ func TestTaskManager_GetTaskStats(t *testing.T) {
 	tasks[0].MarkComplete()
 	tasks[2].MarkComplete()
 
-	// Set tasks with zero due dates (which would be overdue according to implementation)
-	tasks[1].SetDueDate(time.Time{})
-	tasks[3].SetDueDate(time.Time{})
+	// Set due dates for tasks
+	// Task 1: Completed with past due date - not overdue
+	tasks[0].SetDueDate(time.Now().Add(-24 * time.Hour))
+	// Task 2: Past due date and not completed - overdue
+	tasks[1].SetDueDate(time.Now().Add(-24 * time.Hour))
+	// Task 3: Completed with past due date - not overdue
+	tasks[2].SetDueDate(time.Now().Add(-24 * time.Hour))
+	// Task 4: Past due date and not completed - overdue
+	tasks[3].SetDueDate(time.Now().Add(-24 * time.Hour))
 
 	manager := &TaskManager{
 		tasks:  tasks,
@@ -1138,7 +1143,7 @@ func TestTaskManager_GetTaskStats(t *testing.T) {
 		"Total tasks":     4,
 		"Completed tasks": 2,
 		"Pending":         2,
-		"Overdue":         2, // Tasks with zero due date are considered overdue
+		"Overdue":         2, // Tasks 2 and 4 are overdue (past due date and not completed)
 	}
 
 	for key, expectedValue := range expectedStats {
