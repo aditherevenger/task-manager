@@ -97,24 +97,23 @@ func TestTask_IsOverdue(t *testing.T) {
 		t.Error("Task with future due date should not be overdue")
 	}
 
-	// Test with zero date - should be overdue per the actual implementation
+	// Test with zero date - should not be overdue
 	task.SetDueDate(time.Time{})
-	if !task.IsOverdue() {
-		t.Error("Task with zero due date should be overdue according to implementation")
+	if task.IsOverdue() {
+		t.Error("Task with zero due date should not be overdue")
 	}
 
-	// Test with past date - should not be overdue per the actual implementation
-	// Since the IsOverdue() logic is: t.DueDate.IsZero() && time.Now().After(t.DueDate) && !t.Completed
+	// Test with past date - should be overdue
 	pastDate := time.Now().Add(-24 * time.Hour)
 	task.SetDueDate(pastDate)
-	if task.IsOverdue() {
-		t.Error("Task with past due date should not be overdue with current implementation")
+	if !task.IsOverdue() {
+		t.Error("Task with past due date should be overdue")
 	}
 
-	// Test completed task - should not be overdue
+	// Test completed task with past due date - should not be overdue
 	task.MarkComplete()
 	if task.IsOverdue() {
-		t.Error("Completed task should not be overdue")
+		t.Error("Completed task should not be overdue even with past due date")
 	}
 }
 
@@ -141,57 +140,67 @@ func TestTask_String(t *testing.T) {
 			unexpectedParts: []string{"Priority"},
 		},
 		{
-			name: "task with due date",
+			name: "task with future due date",
 			task: NewTask(3, "Due Task", "Due"),
 			setup: func(t *Task) {
 				t.SetDueDate(time.Now().Add(24 * time.Hour))
 			},
-			expectedParts:   []string{"[] 3 Due Task", "Due:", "overdue"}, // Based on actual implementation, it shows overdue
+			expectedParts:   []string{"[] 3 Due Task", "Due:"},
+			unexpectedParts: []string{"Priority", "overdue"},
+		},
+		{
+			name: "task with past due date",
+			task: NewTask(4, "Overdue Task", "Past Due"),
+			setup: func(t *Task) {
+				t.SetDueDate(time.Now().Add(-24 * time.Hour))
+			},
+			expectedParts:   []string{"[] 4 Overdue Task", "Due:", "overdue"},
 			unexpectedParts: []string{"Priority"},
 		},
 		{
-			name: "zero due date",
-			task: NewTask(4, "Zero Due Task", "Zero"),
+			name: "completed task with past due date",
+			task: NewTask(5, "Completed Overdue", "Past Due"),
 			setup: func(t *Task) {
-				t.SetDueDate(time.Time{})
+				t.SetDueDate(time.Now().Add(-24 * time.Hour))
+				t.MarkComplete()
 			},
-			expectedParts:   []string{"[] 4 Zero Due Task"},
-			unexpectedParts: []string{"Due:", "Priority"},
+			expectedParts:   []string{"[✓] 5 Completed Overdue", "Due:"},
+			unexpectedParts: []string{"Priority", "overdue"},
 		},
 		{
 			name: "highest priority",
-			task: NewTask(5, "High Priority", "Important"),
-			setup: func(t *Task) {
-				_ = t.SetPriority(1)
-			},
-			expectedParts:   []string{"[] 5 High Priority"},
-			unexpectedParts: []string{}, // Don't check for Priority since it might be included in the title
-		},
-		{
-			name: "high priority",
 			task: NewTask(6, "High Priority", "Important"),
 			setup: func(t *Task) {
-				_ = t.SetPriority(2)
+				_ = t.SetPriority(1)
 			},
 			expectedParts:   []string{"[] 6 High Priority"},
 			unexpectedParts: []string{}, // Don't check for Priority since it might be included in the title
 		},
 		{
+			name: "high priority",
+			task: NewTask(7, "High Priority", "Important"),
+			setup: func(t *Task) {
+				_ = t.SetPriority(2)
+			},
+			expectedParts:   []string{"[] 7 High Priority"},
+			unexpectedParts: []string{}, // Don't check for Priority since it might be included in the title
+		},
+		{
 			name: "low priority",
-			task: NewTask(7, "Low Priority", "Not urgent"),
+			task: NewTask(8, "Low Priority", "Not urgent"),
 			setup: func(t *Task) {
 				_ = t.SetPriority(4)
 			},
-			expectedParts:   []string{"[] 7 Low Priority", "Priority: Low"},
+			expectedParts:   []string{"[] 8 Low Priority", "Priority: Low"},
 			unexpectedParts: []string{},
 		},
 		{
 			name: "lowest priority",
-			task: NewTask(8, "Low Priority", "Not urgent"),
+			task: NewTask(9, "Low Priority", "Not urgent"),
 			setup: func(t *Task) {
 				_ = t.SetPriority(5)
 			},
-			expectedParts:   []string{"[] 8 Low Priority", "Priority: Lowest"},
+			expectedParts:   []string{"[] 9 Low Priority", "Priority: Lowest"},
 			unexpectedParts: []string{},
 		},
 	}
@@ -293,20 +302,47 @@ func TestTask_DetailString(t *testing.T) {
 			},
 		},
 		{
-			name: "task with due date",
+			name: "task with future due date",
 			task: NewTask(3, "Due Task", "Due"),
 			setup: func(t *Task) {
 				t.SetDueDate(time.Now().Add(24 * time.Hour))
 			},
 			expectedParts: []string{
 				"Due:",
-				"overdue", // Based on current implementation, non-zero due dates also show overdue
 			},
-			unexpectedParts: []string{},
+			unexpectedParts: []string{
+				"overdue",
+			},
+		},
+		{
+			name: "task with past due date",
+			task: NewTask(4, "Overdue Task", "Past Due"),
+			setup: func(t *Task) {
+				t.SetDueDate(time.Now().Add(-24 * time.Hour))
+			},
+			expectedParts: []string{
+				"Due:",
+				"overdue",
+			},
+		},
+		{
+			name: "completed task with past due date",
+			task: NewTask(5, "Completed Overdue", "Past Due"),
+			setup: func(t *Task) {
+				t.SetDueDate(time.Now().Add(-24 * time.Hour))
+				t.MarkComplete()
+			},
+			expectedParts: []string{
+				"Due:",
+				"Status: Completed",
+			},
+			unexpectedParts: []string{
+				"overdue",
+			},
 		},
 		{
 			name: "highest priority",
-			task: NewTask(5, "High Priority", "Important"),
+			task: NewTask(6, "High Priority", "Important"),
 			setup: func(t *Task) {
 				_ = t.SetPriority(1)
 			},
@@ -316,7 +352,7 @@ func TestTask_DetailString(t *testing.T) {
 		},
 		{
 			name: "lowest priority",
-			task: NewTask(8, "Low Priority", "Not urgent"),
+			task: NewTask(9, "Low Priority", "Not urgent"),
 			setup: func(t *Task) {
 				_ = t.SetPriority(5)
 			},

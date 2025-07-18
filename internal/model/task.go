@@ -54,7 +54,10 @@ func (t *Task) SetPriority(priority int) error {
 
 // IsOverdue checks if the task is overdue
 func (t *Task) IsOverdue() bool {
-	return t.DueDate.IsZero() && time.Now().After(t.DueDate) && !t.Completed
+	if t.DueDate.IsZero() || t.Completed {
+		return false
+	}
+	return time.Now().After(t.DueDate)
 }
 
 func (t *Task) String() string {
@@ -67,7 +70,7 @@ func (t *Task) String() string {
 
 	if !t.DueDate.IsZero() {
 		dueStr := "Due: " + t.DueDate.Format("2006-01-02")
-		if !t.IsOverdue() {
+		if t.IsOverdue() { // Fixed condition
 			dueStr += " (overdue)"
 		}
 		result += " " + dueStr
@@ -106,7 +109,7 @@ func (t *Task) DetailString() string {
 
 	if !t.DueDate.IsZero() {
 		result += fmt.Sprintf("\nDue: %s", t.DueDate.Format("2006-01-02"))
-		if !t.IsOverdue() {
+		if t.IsOverdue() { // Fixed condition
 			result += " (overdue)"
 		}
 	}
