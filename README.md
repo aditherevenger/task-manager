@@ -54,6 +54,27 @@ task_manager [options] [command] [arguments]
 - **addr string:** API server address (default ":8080")
 - **help:** Show help
 
+## ⌨️ Commands
+
+| Command          | Alias         | Description                    | Example                                           |
+|------------------|---------------|--------------------------------|---------------------------------------------------|
+| **add ➕**        | `a`           | Add a new task                 | `task-manager add "Buy groceries" "Milk, eggs, bread"` |
+| **list 📜**       | `ls`, `l`     | List pending tasks             | `task-manager list`                               |
+| **list-all 📋**   | `la`          | List all tasks                 | `task-manager list-all`                           |
+| **list-completed ✅** | `lc`      | List completed tasks           | `task-manager list-completed`                     |
+| **list-pending ⏳**   | `lp`      | List pending tasks             | `task-manager list-pending`                       |
+| **list-overdue ⚠️**   | `lo`      | List overdue tasks             | `task-manager list-overdue`                       |
+| **detail 🔍**     | `d`           | Show task details              | `task-manager detail 1`                           |
+| **complete ✔️**   | `c`           | Mark task as complete          | `task-manager complete 1`                         |
+| **uncomplete ↩️** | `uc`          | Mark task as incomplete        | `task-manager uncomplete 1`                       |
+| **update ✏️**     | `u`           | Update task title/description  | `task-manager update 1 "New title" "New description"` |
+| **delete 🗑️**     | `del`, `rm`   | Delete a task                  | `task-manager delete 1`                           |
+| **due 📅**        | `due-date`    | Set task due date              | `task-manager due 1 2023-12-31`                   |
+| **priority 🔝**   | `p`           | Set task priority              | `task-manager priority 1 high`                    |
+| **stats 📊**      | `st`          | Show task statistics           | `task-manager stats`                              |
+| **help ❓**       | `h`           | Show help                      | `task-manager help`                               |
+
+
 ```bash
   # Add a new task
 task_manager add "Complete project documentation" "Add usage examples and API documentation"
