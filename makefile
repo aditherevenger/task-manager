@@ -37,7 +37,7 @@ run:
 
 test:
 	@echo "Running tests with coverage..."
-	set CGO_ENABLED=1 && $(GOTEST) $(TEST_FLAGS) -coverprofile=coverage.out ./...
+	set CGO_ENABLED=1 && $(GOTEST) $(TEST_FLAGS) -coverprofile=coverage.out ./internal/... ./pkg/...
 	@$(GOCMD) tool cover -func=coverage.out
 
 clean:
