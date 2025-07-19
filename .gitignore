@@ -1,4 +1,6 @@
 # IDE-specific files
+.idea/
+*.iml
 /shelf/
 /workspace.xml
 /httpRequests/
