@@ -1,10 +1,38 @@
-# Default ignored files
+# IDE-specific files
 /shelf/
 /workspace.xml
-# Editor-based HTTP Client requests
 /httpRequests/
-# Environment-dependent path to Maven home directory
 /mavenHomeManager.xml
-# Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# Build and output folders
+/bin/
+build/
+dist/
+out/
+
+# Executables and compiled files
+*.exe
+*.dll
+*.so
+*.dylib
+*.class
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Go coverage and test files
+coverage.out
+*.test
+
+# Vendor (if using go mod vendor)
+vendor/
+
+# Module cache (optional, usually not needed in repo)
+/pkg/mod/
