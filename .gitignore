@@ -1,6 +1,6 @@
 # IDE-specific files
 .idea/
-*.iml
+!task-manager.iml
 /shelf/
 /workspace.xml
 /httpRequests/
