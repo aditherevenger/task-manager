@@ -28,6 +28,7 @@ out/
 Thumbs.db
 
 # Go coverage and test files
+coverage_*.out
 coverage.out
 *.test
 
