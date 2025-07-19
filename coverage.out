@@ -1,10 +1,4 @@
 mode: set
-task-manager/internal/api/server.go:17.58,30.2 4 0
-task-manager/internal/api/server.go:33.35,39.2 3 0
-task-manager/internal/api/server.go:39.2,42.3 2 0
-task-manager/internal/api/server.go:42.3,52.4 9 0
-task-manager/internal/api/server.go:55.3,55.42 1 0
-task-manager/internal/api/server.go:60.41,62.2 1 0
 task-manager/pkg/utils/utils.go:12.54,14.19 1 1
 task-manager/pkg/utils/utils.go:14.19,16.3 1 1
 task-manager/pkg/utils/utils.go:19.2,20.16 2 1
@@ -141,6 +135,21 @@ task-manager/internal/manager/task_manager.go:219.38,221.4 1 1
 task-manager/internal/manager/task_manager.go:222.3,222.63 1 1
 task-manager/internal/manager/task_manager.go:224.2,224.20 1 1
 task-manager/internal/manager/task_manager.go:228.53,240.2 5 1
+task-manager/internal/storage/storage.go:25.51,29.2 1 1
+task-manager/internal/storage/storage.go:32.55,35.47 2 1
+task-manager/internal/storage/storage.go:35.47,37.3 1 0
+task-manager/internal/storage/storage.go:40.2,41.16 2 1
+task-manager/internal/storage/storage.go:41.16,43.3 1 0
+task-manager/internal/storage/storage.go:46.2,46.45 1 1
+task-manager/internal/storage/storage.go:50.53,52.55 1 1
+task-manager/internal/storage/storage.go:52.55,55.3 1 1
+task-manager/internal/storage/storage.go:58.2,59.16 2 1
+task-manager/internal/storage/storage.go:59.16,61.3 1 0
+task-manager/internal/storage/storage.go:64.2,64.20 1 1
+task-manager/internal/storage/storage.go:64.20,66.3 1 1
+task-manager/internal/storage/storage.go:69.2,71.16 3 1
+task-manager/internal/storage/storage.go:71.16,73.3 1 1
+task-manager/internal/storage/storage.go:75.2,75.19 1 1
 task-manager/internal/api/middleware/logger.go:9.31,10.30 1 1
 task-manager/internal/api/middleware/logger.go:10.30,23.10 7 1
 task-manager/internal/api/middleware/logger.go:24.22,26.46 1 1
@@ -218,3 +227,9 @@ task-manager/internal/api/handlers/task_handler.go:305.2,306.16 2 1
 task-manager/internal/api/handlers/task_handler.go:306.16,309.3 2 1
 task-manager/internal/api/handlers/task_handler.go:312.2,313.45 2 0
 task-manager/internal/api/handlers/task_handler.go:317.49,320.2 2 1
+task-manager/internal/api/server.go:17.58,30.2 4 1
+task-manager/internal/api/server.go:33.35,39.2 3 1
+task-manager/internal/api/server.go:39.2,42.3 2 1
+task-manager/internal/api/server.go:42.3,52.4 9 1
+task-manager/internal/api/server.go:55.3,55.42 1 1
+task-manager/internal/api/server.go:60.41,62.2 1 1
