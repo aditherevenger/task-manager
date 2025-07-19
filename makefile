@@ -1,8 +1,8 @@
 # Makefile for Go Task Manager
 
 # Variables
-BINARY_NAME=task-manager
-MAIN_PACKAGE=./cmd/task-manager
+BINARY_NAME=task_manager
+MAIN_PACKAGE=./cmd/task_manager
 BINARY_OUTPUT=./bin/$(BINARY_NAME)
 
 # Go commands
@@ -33,11 +33,12 @@ build:
 
 run:
 	@echo "Running..."
-	$(GORUN) $(MAIN_PACKAGE)
+	$(BINARY_OUTPUT) -api -addr :8080
 
 test:
 	@echo "Running tests with coverage..."
-	set CGO_ENABLED=1 && $(GOTEST) $(TEST_FLAGS) -coverprofile=coverage.out ./internal/... ./pkg/...
+	$(GOTEST) $(TEST_FLAGS) -coverprofile=coverage_all.out ./...
+	findstr /V "cmd/task_manager/main.go" coverage_all.out > coverage.out
 	@$(GOCMD) tool cover -func=coverage.out
 
 clean:
