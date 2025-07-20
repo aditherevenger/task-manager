@@ -3,7 +3,8 @@
 ![Go Version](https://img.shields.io/badge/Go-1.24-blue )
 ![License](https://img.shields.io/badge/License-MIT-green )
 ![Test Coverage](https://img.shields.io/badge/Coverage-80%2B%25-brightgreen )
-![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/task-manager/go.yml?branch=master )
+![Build Status](https://img.shields.io/github/actions/workflow/status/aditherevenger/task-manager/go.yml?branch=master)
+
 
 A robust task management application built with Go, featuring both CLI and REST API interfaces. Designed with clean architecture principles and best practices for Go development.
 
