@@ -4,31 +4,28 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"task-manager/internal/api"
+	"task-manager/internal/config"
 	"task-manager/internal/manager"
 	"task-manager/internal/storage"
 	"task-manager/pkg/utils"
 )
 
 const (
-	defaultStorageFile = "tasks.json"
-	defaultPort        = "8080"
+	defaultPort = "8080"
 )
 
 func main() {
 
 	//Define command line flags
 	var (
-		storageFile string
-		apiMode     bool
-		apiAddr     string
-		showHelp    bool
+		apiMode  bool
+		apiAddr  string
+		showHelp bool
 	)
 
-	flag.StringVar(&storageFile, "file", defaultStorageFile, "Path to the storage file")
 	flag.BoolVar(&apiMode, "api", false, "Run the API server")
 	flag.StringVar(&apiAddr, "addr", ":"+defaultPort, "API server address")
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
@@ -39,29 +36,46 @@ func main() {
 		return
 	}
 
-	//Ensure storage file path is absolute
-	if !filepath.IsAbs(storageFile) {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error getting home directory: %v\n", err)
-			os.Exit(1)
-		}
-		storageFile = filepath.Join(homeDir, ".task_manager", storageFile)
+	// Load configuration from environment
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading configuration: %v\n", err)
+		os.Exit(1)
 	}
 
-	//Create storage and task manager
-	jsonStorage := storage.NewJSONStorage(storageFile)
-	taskManager, err := manager.NewTaskManager(jsonStorage)
+	// Use command-line flag to override config if provided
+	if flag.Lookup("addr").Value.String() != ":"+defaultPort {
+		cfg.APIAddr = apiAddr
+	}
+
+	// Create PostgreSQL storage
+	fmt.Println("Using PostgreSQL storage")
+	pgStorage, err := storage.NewPostgresStorage(
+		cfg.DBHost,
+		cfg.DBPort,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+		cfg.DBSSLMode,
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating PostgreSQL storage: %v\n", err)
+		os.Exit(1)
+	}
+	defer pgStorage.Close()
+
+	// Create task manager
+	taskManager, err := manager.NewTaskManager(pgStorage)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating task manager: %v\n", err)
 		os.Exit(1)
 	}
 
-	//Rin in API mode if specified
+	//Run in API mode if specified
 	if apiMode {
-		fmt.Printf("Starting API server on %s\n", apiAddr)
+		fmt.Printf("Starting API server on %s\n", cfg.APIAddr)
 		server := api.NewServer(taskManager)
-		if err := server.Run(apiAddr); err != nil {
+		if err := server.Run(cfg.APIAddr); err != nil {
 			fmt.Fprintf(os.Stderr, "Error starting API server: %v\n", err)
 			os.Exit(1)
 		}
@@ -353,14 +367,16 @@ func showStats(tm *manager.TaskManager) {
 }
 
 func printHelp() {
-	fmt.Println("Task Manager - A simple CLI task management application")
+	fmt.Println("Task Manager - A PostgreSQL-backed CLI task management application")
 	fmt.Println("\nUsage:")
 	fmt.Println("  task_manager [options] [command] [arguments]")
 	fmt.Println("\nOptions:")
-	fmt.Println("  -file string    Storage file path (default \"tasks.json\")")
 	fmt.Println("  -api            Run in API mode")
 	fmt.Println("  -addr string    API server address (default \":8080\")")
 	fmt.Println("  -help           Show help")
+	fmt.Println("\nConfiguration:")
+	fmt.Println("  Set database credentials in .env file or environment variables:")
+	fmt.Println("  DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_SSLMODE")
 	fmt.Println("\nCommands (CLI mode only):")
 	fmt.Println("  add, a <title> [description]       Add a new task")
 	fmt.Println("  list, ls, l                        List pending tasks")

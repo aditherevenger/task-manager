@@ -188,7 +188,7 @@ export default function TasksPage() {
     <div className="space-y-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Tasks</h1>
-        <p className="text-sm text-muted-foreground">Manage tasks via your Go API (`/api/v1/*`).</p>
+        <p className="text-sm text-muted-foreground">Manage your tasks</p>
       </div>
 
       {error ? (
