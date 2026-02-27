@@ -464,6 +464,17 @@ func TestSetDueDate_ExtendedCoverage(t *testing.T) {
 		skipLoad       bool
 	}{
 		{
+			name:   "set due date successfully",
+			taskID: "1",
+			request: SetDueDateRequest{
+				DueDate: "2025-12-31",
+			},
+			setupMock: func(m storage.TaskStorage) {
+				m.(*MockStorage).tasks = []*model.Task{model.NewTask(1, "Task 1", "Description 1")}
+			},
+			expectedStatus: http.StatusOK,
+		},
+		{
 			name:   "set due date with invalid task ID",
 			taskID: "invalid",
 			request: SetDueDateRequest{
@@ -544,6 +555,17 @@ func TestSetPriority_ExtendedCoverage(t *testing.T) {
 		expectedStatus int
 		skipLoad       bool
 	}{
+		{
+			name:   "set priority successfully",
+			taskID: "1",
+			request: SetPriorityRequest{
+				Priority: "high",
+			},
+			setupMock: func(m storage.TaskStorage) {
+				m.(*MockStorage).tasks = []*model.Task{model.NewTask(1, "Task 1", "Description 1")}
+			},
+			expectedStatus: http.StatusOK,
+		},
 		{
 			name:   "set priority with invalid task ID",
 			taskID: "invalid",
@@ -705,6 +727,7 @@ func TestGetTask_ExtendedCoverage(t *testing.T) {
 func TestListTasks(t *testing.T) {
 	tests := []struct {
 		name           string
+		query          string
 		setupMock      func(storage.TaskStorage)
 		expectedStatus int
 		validate       func(*testing.T, *httptest.ResponseRecorder)
@@ -753,6 +776,93 @@ func TestListTasks(t *testing.T) {
 			},
 		},
 		{
+			name:  "list only completed tasks",
+			query: "?completed=true",
+			setupMock: func(m storage.TaskStorage) {
+				task1 := model.NewTask(1, "Task 1", "Description 1")
+				task2 := model.NewTask(2, "Task 2", "Description 2")
+				task2.MarkComplete()
+				task3 := model.NewTask(3, "Task 3", "Description 3")
+				task3.MarkComplete()
+				m.(*MockStorage).tasks = []*model.Task{task1, task2, task3}
+			},
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var response []map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					t.Fatalf("Failed to unmarshal response: %v", err)
+				}
+				if len(response) != 2 {
+					t.Errorf("Expected 2 completed tasks, got %d", len(response))
+				}
+				for _, task := range response {
+					if task["completed"].(bool) != true {
+						t.Error("Expected all tasks to be completed")
+					}
+				}
+			},
+		},
+		{
+			name:  "list only pending tasks",
+			query: "?completed=false",
+			setupMock: func(m storage.TaskStorage) {
+				task1 := model.NewTask(1, "Task 1", "Description 1")
+				task2 := model.NewTask(2, "Task 2", "Description 2")
+				task2.MarkComplete()
+				task3 := model.NewTask(3, "Task 3", "Description 3")
+				m.(*MockStorage).tasks = []*model.Task{task1, task2, task3}
+			},
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var response []map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					t.Fatalf("Failed to unmarshal response: %v", err)
+				}
+				if len(response) != 2 {
+					t.Errorf("Expected 2 pending tasks, got %d", len(response))
+				}
+				for _, task := range response {
+					if task["completed"].(bool) != false {
+						t.Error("Expected all tasks to be pending")
+					}
+				}
+			},
+		},
+		{
+			name:  "list only overdue tasks",
+			query: "?overdue=true",
+			setupMock: func(m storage.TaskStorage) {
+				task1 := model.NewTask(1, "Task 1", "Description 1")
+				if dueDate, err := utils.ParseDueDate("2020-01-01"); err == nil {
+					task1.SetDueDate(dueDate)
+				}
+				task2 := model.NewTask(2, "Task 2", "Description 2")
+				task3 := model.NewTask(3, "Task 3", "Description 3")
+				if dueDate, err := utils.ParseDueDate("2020-06-01"); err == nil {
+					task3.SetDueDate(dueDate)
+				}
+				m.(*MockStorage).tasks = []*model.Task{task1, task2, task3}
+			},
+			expectedStatus: http.StatusOK,
+			validate: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var response []map[string]interface{}
+				err := json.Unmarshal(w.Body.Bytes(), &response)
+				if err != nil {
+					t.Fatalf("Failed to unmarshal response: %v", err)
+				}
+				if len(response) != 2 {
+					t.Errorf("Expected 2 overdue tasks, got %d", len(response))
+				}
+				for _, task := range response {
+					if task["is_overdue"].(bool) != true {
+						t.Error("Expected all tasks to be overdue")
+					}
+				}
+			},
+		},
+		{
 			name: "list tasks with storage error",
 			setupMock: func(m storage.TaskStorage) {
 				m.(*MockStorage).err = errors.New("storage error")
@@ -782,7 +892,11 @@ func TestListTasks(t *testing.T) {
 			}
 
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("GET", "/api/v1/tasks", nil)
+			url := "/api/v1/tasks"
+			if tt.query != "" {
+				url += tt.query
+			}
+			req, _ := http.NewRequest("GET", url, nil)
 			r.ServeHTTP(w, req)
 
 			if w.Code != tt.expectedStatus {
