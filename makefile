@@ -2,8 +2,10 @@
 
 # Variables
 BINARY_NAME=task_manager
-MAIN_PACKAGE=./cmd/task_manager
+MAIN_PACKAGE=./backend/cmd/task_manager
 BINARY_OUTPUT=./bin/$(BINARY_NAME)
+
+BACKEND_DIR=./backend
 
 # Go commands
 GOCMD=go
@@ -37,7 +39,7 @@ run:
 
 test:
 	@echo "Running tests with coverage..."
-	$(GOTEST) $(TEST_FLAGS) -coverprofile=coverage_all.out ./...
+	$(GOCMD) -C backend test $(TEST_FLAGS) -coverprofile=../coverage_all.out ./...
 	findstr /V "cmd/task_manager/main.go" coverage_all.out > coverage.out
 	@$(GOCMD) tool cover -func=coverage.out
 
@@ -49,15 +51,15 @@ clean:
 
 fmt:
 	@echo "Formatting code..."
-	$(GOFMT) ./...
+	$(GOCMD) -C backend fmt ./...
 
 deps:
 	@echo "Downloading dependencies..."
-	$(GOGET) -v ./...
+	$(GOCMD) -C backend get -v ./...
 
 tidy:
 	@echo "Tidying dependencies..."
-	$(GOMOD) tidy
+	$(GOCMD) -C backend mod tidy
 
 help:
 	@echo "Available targets:"
